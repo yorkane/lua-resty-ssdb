@@ -17,10 +17,9 @@ local error = error
 local gmatch = string.gmatch
 local remove = table.remove
 
-
-module(...)
-
-_VERSION = '0.02'
+local _M = {
+    _VERSION = '0.03'
+}
 
 local commands = {
     "set",                  "get",                 "del",
@@ -47,7 +46,7 @@ local commands = {
 local mt = { __index = _M }
 
 
-function new(self)
+function _M.new(self)
     local sock, err = tcp()
     if not sock then
         return nil, err
@@ -56,7 +55,7 @@ function new(self)
 end
 
 
-function set_timeout(self, timeout)
+function _M.set_timeout(self, timeout)
     local sock = self.sock
     if not sock then
         return nil, "not initialized"
@@ -66,7 +65,7 @@ function set_timeout(self, timeout)
 end
 
 
-function set_keepalive(self, ...)
+function _M.set_keepalive(self, ...)
     local sock = self.sock
     if not sock then
         return nil, "not initialized"
@@ -76,7 +75,7 @@ function set_keepalive(self, ...)
 end
 
 
-function get_reused_times(self)
+function _M.get_reused_times(self)
     local sock = self.sock
     if not sock then
         return nil, "not initialized"
@@ -86,7 +85,7 @@ function get_reused_times(self)
 end
 
 
-function close(self)
+function _M.close(self)
     local sock = self.sock
     if not sock then
         return nil, "not initialized"
@@ -190,7 +189,7 @@ for i = 1, #commands do
         end
 end
 
-function connect(self, host, port, auth, ...)
+function _M.connect(self, host, port, auth, ...)
     local sock = self.sock
     if not sock then
         return nil, "not initialized"
@@ -215,7 +214,7 @@ function connect(self, host, port, auth, ...)
 end
 
 
-function multi_hset(self, hashname, ...)
+function _M.multi_hset(self, hashname, ...)
     local args = {...}
     if #args == 1 then
         local t = args[1]
@@ -233,7 +232,7 @@ function multi_hset(self, hashname, ...)
 end
 
 
-function multi_zset(self, keyname, ...)
+function _M.multi_zset(self, keyname, ...)
     local args = {...}
     if #args == 1 then
         local t = args[1]
@@ -251,17 +250,17 @@ function multi_zset(self, keyname, ...)
 end
 
 
-function init_pipeline(self)
+function _M.init_pipeline(self)
     self._reqs = {}
 end
 
 
-function cancel_pipeline(self)
+function _M.cancel_pipeline(self)
     self._reqs = nil
 end
 
 
-function commit_pipeline(self)
+function _M.commit_pipeline(self)
     local reqs = self._reqs
     if not reqs then
         return nil, "no pipeline"
@@ -297,7 +296,7 @@ function commit_pipeline(self)
 end
 
 
-function array_to_hash(self, t)
+function _M.array_to_hash(self, t)
     local h = {}
     for i = 1, #t, 2 do
         h[t[i]] = t[i + 1]
@@ -314,7 +313,7 @@ local class_mt = {
 }
 
 
-function add_commands(...)
+function _M.add_commands(...)
     local cmds = {...}
     local newindex = class_mt.__newindex
     class_mt.__newindex = nil
@@ -330,3 +329,5 @@ end
 
 
 setmetatable(_M, class_mt)
+
+return _M
